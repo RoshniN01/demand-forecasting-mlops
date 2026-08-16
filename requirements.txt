@@ -22,7 +22,6 @@ cryptography==49.0.0
 cycler==0.12.1
 databricks-sdk==0.130.0
 distro==1.9.0
-docker==7.1.0
 fastapi==0.138.2
 filelock==3.32.3
 Flask==3.1.3
