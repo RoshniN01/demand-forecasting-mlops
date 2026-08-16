@@ -96,6 +96,7 @@ demand-forecasting-mlops/
 ├── README.md
 ├── requirements.txt
 └── run_pipeline.py
+```
 
 ## Feature Engineering
 
