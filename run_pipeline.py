@@ -1,0 +1,3 @@
+from pipelines.forecast_pipeline import demand_forecasting_pipeline
+
+demand_forecasting_pipeline()
