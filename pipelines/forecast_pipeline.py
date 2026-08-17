@@ -6,17 +6,20 @@ from steps.forecast import forecast
 from steps.evaluate import evaluate
 
 
-@pipeline
+@pipeline(enable_cache=False)
 def demand_forecasting_pipeline():
 
-    # Step 1: Feature engineering
-    ts = feature_engineering()
+    # Step 1: Create time-series features
+    data = feature_engineering()
 
-    # Step 2: Train model
-    model = train_model(ts)
+    # Step 2: Tune and train the model
+    model = train_model(data)
 
-    # Step 3: Generate forecast
-    predictions = forecast(ts, model)
+    # Step 3: Generate predictions
+    predictions = forecast(
+        data,
+        model
+    )
 
-    # Step 4: Evaluate forecast
+    # Step 4: Evaluate predictions
     evaluate(predictions)

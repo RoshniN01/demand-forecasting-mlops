@@ -1,69 +1,110 @@
 from zenml import step
+
 import pandas as pd
 import numpy as np
+
+
+ITEM_ID = "HOBBIES_1_001"
+STORE_ID = "CA_1"
 
 
 @step
 def feature_engineering() -> pd.DataFrame:
 
-    print("Loading sales data...")
+    print("Loading M5 sales data...")
 
-    sales = pd.read_csv("data/sales_train_evaluation.csv")
+    sales = pd.read_csv(
+        "data/sales_train_evaluation.csv"
+    )
 
-    print("Sales data shape:", sales.shape)
+    # Select the product and store
+    selected = sales[
+        (sales["item_id"] == ITEM_ID)
+        & (sales["store_id"] == STORE_ID)
+    ]
 
-    # Select one representative product/store series
-    row = sales.iloc[0]
+    if selected.empty:
+        raise ValueError(
+            "The selected product and store were not found."
+        )
 
-    print("\nSelected series:")
-    print("ID:", row["id"])
-    print("Item:", row["item_id"])
+    row = selected.iloc[0]
+
+    print("Product:", row["item_id"])
     print("Store:", row["store_id"])
 
     # Get daily sales columns
-    d_cols = [c for c in sales.columns if c.startswith("d_")]
+    day_columns = [
+        column
+        for column in sales.columns
+        if column.startswith("d_")
+    ]
 
-    # Convert daily sales into a time series
-    ts = pd.DataFrame({
-        "day": d_cols,
+    # Convert M5 wide data into time-series format
+    data = pd.DataFrame({
+        "day": day_columns,
         "sales": pd.to_numeric(
-            row[d_cols].values,
+            row[day_columns].values,
             errors="coerce"
         )
     })
 
-    ts["day_number"] = np.arange(len(ts))
+    data["day_number"] = np.arange(
+        len(data)
+    )
 
-    # Lag features
-    ts["lag_1"] = ts["sales"].shift(1)
-    ts["lag_7"] = ts["sales"].shift(7)
-    ts["lag_28"] = ts["sales"].shift(28)
+    # Previous-day sales
+    data["lag_1"] = (
+        data["sales"].shift(1)
+    )
 
-    # Rolling features
-    ts["rolling_mean_7"] = (
-        ts["sales"]
+    # Sales one week ago
+    data["lag_7"] = (
+        data["sales"].shift(7)
+    )
+
+    # Sales four weeks ago
+    data["lag_28"] = (
+        data["sales"].shift(28)
+    )
+
+    # Average sales of previous 7 days
+    data["rolling_mean_7"] = (
+        data["sales"]
         .shift(1)
         .rolling(7)
         .mean()
     )
 
-    ts["rolling_mean_28"] = (
-        ts["sales"]
+    # Average sales of previous 28 days
+    data["rolling_mean_28"] = (
+        data["sales"]
         .shift(1)
         .rolling(28)
         .mean()
     )
 
-    # Calendar features
-    ts["day_of_week"] = ts["day_number"] % 7
-    ts["month"] = (
-        (ts["day_number"] // 30) % 12
+    # Simple calendar features
+    data["day_of_week"] = (
+        data["day_number"] % 7
+    )
+
+    data["month"] = (
+        (data["day_number"] // 30) % 12
     ) + 1
 
-    # Remove rows created by lagging
-    ts = ts.dropna().reset_index(drop=True)
+    # Remove rows with missing lag values
+    data = data.dropna().reset_index(
+        drop=True
+    )
 
-    print("\nFeature engineering completed.")
-    print("Feature data shape:", ts.shape)
+    print(
+        "Feature engineering completed."
+    )
 
-    return ts
+    print(
+        "Rows:",
+        len(data)
+    )
+
+    return data
