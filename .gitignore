@@ -1,4 +1,13 @@
 venv/
 __pycache__/
 *.pyc
+
+# MLflow
 mlflow.db
+
+# ZenML
+.zen/
+zenml_recovered.db
+
+# Generated predictions
+data/new_predictions.csv

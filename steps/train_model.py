@@ -28,25 +28,51 @@ def train_model(data: pd.DataFrame) -> str:
 
     print("Preparing training data...")
 
-    X = data[FEATURES]
-    y = data["sales"]
-
-    # Last 28 days are used for testing
     test_size = 28
 
-    X_train = X.iloc[:-test_size]
-    y_train = y.iloc[:-test_size]
+    train_parts = []
+    test_parts = []
 
-    X_test = X.iloc[-test_size:]
-    y_test = y.iloc[-test_size:]
+    # Split each product separately
+    for item_id, product_data in data.groupby("item_id"):
 
+        product_data = product_data.sort_values(
+            "day_number"
+        ).reset_index(drop=True)
+
+        train_parts.append(
+            product_data.iloc[:-test_size]
+        )
+
+        test_parts.append(
+            product_data.iloc[-test_size:]
+        )
+
+    train_data = pd.concat(
+        train_parts,
+        ignore_index=True
+    )
+
+    test_data = pd.concat(
+        test_parts,
+        ignore_index=True
+    )
+
+    X_train = train_data[FEATURES]
+    y_train = train_data["sales"]
+
+    X_test = test_data[FEATURES]
+    y_test = test_data["sales"]
+
+    print("Products:", data["item_id"].nunique())
     print("Training rows:", len(X_train))
     print("Testing rows:", len(X_test))
 
-    # MLflow experiment
-    mlflow.set_experiment("demand_forecasting")
+    # MLflow
+    mlflow.set_experiment(
+        "demand_forecasting"
+    )
 
-    # Optuna
     print("\nStarting Optuna tuning...")
 
     def objective(trial):
@@ -94,7 +120,6 @@ def train_model(data: pd.DataFrame) -> str:
             )
         )
 
-        # Record this Optuna trial in MLflow
         with mlflow.start_run(
             run_name=f"optuna_trial_{trial.number}",
             nested=True
@@ -106,7 +131,8 @@ def train_model(data: pd.DataFrame) -> str:
                 "learning_rate": params["learning_rate"],
                 "num_leaves": params["num_leaves"],
                 "max_depth": params["max_depth"],
-                "min_child_samples": params["min_child_samples"],
+                "min_child_samples":
+                    params["min_child_samples"],
             })
 
             mlflow.log_metric(
@@ -121,14 +147,14 @@ def train_model(data: pd.DataFrame) -> str:
 
         return rmse
 
-    # Run Optuna inside MLflow run
+    # Main MLflow run
     with mlflow.start_run(
-        run_name="optuna_lightgbm"
+        run_name="optuna_lightgbm_5_products"
     ):
 
         study = optuna.create_study(
             direction="minimize",
-            study_name="lightgbm_demand_forecasting"
+            study_name="lightgbm_demand_forecasting_5_products"
         )
 
         study.optimize(
@@ -142,12 +168,10 @@ def train_model(data: pd.DataFrame) -> str:
         print("\nBest Optuna RMSE:")
         print(study.best_value)
 
-        # Log best parameters
         mlflow.log_params(
             study.best_params
         )
 
-        # Log Optuna results
         mlflow.log_metric(
             "best_optuna_rmse",
             study.best_value
@@ -158,7 +182,12 @@ def train_model(data: pd.DataFrame) -> str:
             len(study.trials)
         )
 
-        # Train final model
+        mlflow.log_param(
+            "number_of_products",
+            data["item_id"].nunique()
+        )
+
+        # Final model
         model = LGBMRegressor(
             **study.best_params
         )
@@ -177,7 +206,6 @@ def train_model(data: pd.DataFrame) -> str:
             0
         )
 
-        # Calculate RMSE
         rmse = np.sqrt(
             mean_squared_error(
                 y_test,
@@ -185,7 +213,7 @@ def train_model(data: pd.DataFrame) -> str:
             )
         )
 
-        # Calculate MAPE
+        # MAPE
         mask = y_test != 0
 
         if mask.sum() > 0:
@@ -200,7 +228,6 @@ def train_model(data: pd.DataFrame) -> str:
         else:
             mape = np.nan
 
-        # Log final metrics
         mlflow.log_metric(
             "rmse",
             rmse
