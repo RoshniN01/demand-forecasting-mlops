@@ -124,12 +124,137 @@ The engineered features are then passed to the LightGBM model for training and f
 
 The project uses **LightGBM (Light Gradient Boosting Machine)** as the demand forecasting model.
 
-LightGBM is a gradient-boosting algorithm suitable for structured and tabular data. It is trained using the engineered time-series features generated from the M5 dataset.
+LightGBM is a gradient-boosting framework that builds decision trees sequentially. Each new tree attempts to reduce the errors produced by the previous trees.
 
-The model is evaluated using forecasting metrics such as:
+The model is trained using the engineered time-series features generated during the feature engineering stage, including lag, rolling, and calendar-based features.
 
-- RMSE (Root Mean Squared Error)
-- MAPE (Mean Absolute Percentage Error)
+The model is evaluated using:
+
+- **RMSE (Root Mean Squared Error)**
+- **MAPE (Mean Absolute Percentage Error)**
+
+The mathematical optimization process used by LightGBM is described in the **Mathematics Behind LightGBM** section below.
+
+## Mathematics Behind LightGBM
+
+LightGBM is based on gradient boosting, where multiple decision trees are built sequentially. Each new tree attempts to reduce the errors made by the previous trees.
+
+For a training dataset with observations \(x_i\) and target values \(y_i\), the prediction after adding a new tree can be written as:
+
+\[
+\hat{y}_i^{(t)} = \hat{y}_i^{(t-1)} + f_t(x_i)
+\]
+
+where:
+
+- \(\hat{y}_i^{(t-1)}\) is the prediction from the previous trees.
+- \(f_t(x_i)\) is the new decision tree.
+- \(\hat{y}_i^{(t)}\) is the updated prediction.
+
+### Objective Function
+
+At each boosting iteration, LightGBM minimizes an objective function consisting of the training loss and a regularization term:
+
+\[
+Obj^{(t)} =
+\sum_{i=1}^{n}
+L(y_i,\hat{y}_i^{(t)})
++
+\Omega(f_t)
+\]
+
+where:
+
+- \(L\) is the loss function.
+- \(y_i\) is the actual value.
+- \(\hat{y}_i^{(t)}\) is the predicted value.
+- \(\Omega(f_t)\) controls the complexity of the new tree.
+
+### Second-Order Taylor Approximation
+
+LightGBM uses the first and second derivatives of the loss function to efficiently optimize each new tree.
+
+For each observation:
+
+\[
+g_i =
+\frac{\partial L(y_i,\hat{y}_i^{(t-1)})}
+{\partial \hat{y}_i^{(t-1)}}
+\]
+
+\[
+h_i =
+\frac{\partial^2 L(y_i,\hat{y}_i^{(t-1)})}
+{\partial (\hat{y}_i^{(t-1)})^2}
+\]
+
+where:
+
+- \(g_i\) is the gradient.
+- \(h_i\) is the Hessian (second derivative).
+
+Using the second-order Taylor approximation, the objective for a new tree can be approximated using these gradients and Hessians.
+
+### Leaf Weight
+
+For a leaf containing a set of observations \(I_j\), the optimal leaf value can be obtained using the sum of gradients and Hessians:
+
+\[
+w_j^* =
+-\frac{\sum_{i\in I_j}g_i}
+{\sum_{i\in I_j}h_i+\lambda}
+\]
+
+where:
+
+- \(w_j^*\) is the optimal value of the leaf.
+- \(\lambda\) is the L2 regularization parameter.
+- \(\sum g_i\) represents the total gradient in the leaf.
+- \(\sum h_i\) represents the total Hessian in the leaf.
+
+### Choosing a Split
+
+LightGBM evaluates possible feature splits by calculating the improvement in the objective function.
+
+For a split into left and right child nodes, the split gain is based on:
+
+\[
+Gain =
+\frac{1}{2}
+\left(
+\frac{G_L^2}{H_L+\lambda}
++
+\frac{G_R^2}{H_R+\lambda}
+-
+\frac{G^2}{H+\lambda}
+\right)
+\]
+
+where:
+
+\[
+G_L=\sum_{i\in L}g_i,
+\qquad
+G_R=\sum_{i\in R}g_i
+\]
+
+and
+
+\[
+H_L=\sum_{i\in L}h_i,
+\qquad
+H_R=\sum_{i\in R}h_i
+\]
+
+A split that produces a larger gain provides a greater improvement in the objective and is therefore preferred.
+
+### LightGBM Tree Growth
+
+Unlike traditional level-wise tree growth, LightGBM uses **leaf-wise tree growth**. At each step, it selects the leaf that provides the largest reduction in the objective function and splits that leaf.
+
+This allows LightGBM to reduce the loss efficiently while building relatively complex trees.
+
+For this project, LightGBM uses the engineered time-series features to learn relationships between historical demand patterns and future demand.
 
 ## Hyperparameter Optimization with Optuna
 
@@ -150,6 +275,14 @@ The optimization process follows these steps:
 The current experiment uses:
  Number of trials = 10
  Number of products = 5
+
+### Optuna Trial Comparison
+
+The Optuna optimization was performed using 10 trials. Each trial used a different combination of LightGBM hyperparameters and was evaluated using RMSE.
+
+The MLflow comparison below shows the relationship between the LightGBM learning rate and the RMSE obtained across the 10 Optuna trials. Lower RMSE indicates better forecasting performance.
+
+![Optuna Trial Comparison](images/optuna_trials.jpeg)
 
 ## Best Hyperparameters
 
