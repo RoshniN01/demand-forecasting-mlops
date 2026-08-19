@@ -24,13 +24,9 @@ The project aims to:
 
 This project uses the **M5 Forecasting — Accuracy** dataset from Kaggle, which contains hierarchical daily sales data from Walmart.
 
-The following datasets are used:
+The project uses the M5 data to perform time-series feature engineering and demand forecasting for **5 selected products**.
 
-- `calendar.csv` — contains calendar and event-related information.
-- `sales_train_evaluation.csv` — contains historical daily sales data for products across stores.
-- `sell_prices.csv` — contains product price information across stores and weeks.
-
-The datasets are stored in the `data/` directory.
+The required M5 dataset files are stored in the `data/` directory.
 
 ## Products Used
 
