@@ -135,7 +135,7 @@ The mathematical optimization process used by LightGBM is described in the **Mat
 
 LightGBM is based on gradient boosting, where multiple decision trees are built sequentially. Each new tree attempts to reduce the errors made by the previous trees.
 
-For a training dataset with observations \(x_i\) and actual target values \(y_i\), the prediction is updated when a new tree is added:
+For a training dataset with observations $$\(x_i\)$$ and actual target values $$\(y_i\)$$, the prediction is updated when a new tree is added:
 
 ```math
 \hat{y}_i^{(t)} = \hat{y}_i^{(t-1)} + f_t(x_i)
@@ -143,11 +143,11 @@ For a training dataset with observations \(x_i\) and actual target values \(y_i\
 
 where:
 
-- \(y_i\) represents the actual value.
-- \(\hat{y}_i^{(t-1)}\) represents the prediction from the previous boosting iteration.
-- \(f_t(x_i)\) represents the new decision tree.
-- \(\hat{y}_i^{(t)}\) represents the updated prediction.
-- \(t\) represents the current boosting iteration.
+- $$\(y_i\)$$ represents the actual value.
+- $$\(\hat{y}_i^{(t-1)}\)$$ represents the prediction from the previous boosting iteration.
+- $$\(f_t(x_i)\)$$ represents the new decision tree.
+- $$\(\hat{y}_i^{(t)}\)$$ represents the updated prediction.
+- $$\(t\)$$ represents the current boosting iteration.
 
 ### Objective Function
 
@@ -160,10 +160,10 @@ Obj^{(t)} =
 
 where:
 
-- \(y_i\) is the actual value.
-- \(\hat{y}_i^{(t)}\) is the predicted value.
-- \(L\) is the loss function.
-- \(\Omega(f_t)\) is the regularization term that controls the complexity of the new tree.
+- $$\(y_i\)$$ is the actual value.
+- $$\(\hat{y}_i^{(t)}\)$$ is the predicted value.
+- $$\(L\)$$ is the loss function.
+- $$\(\Omega(f_t)\)$$ is the regularization term that controls the complexity of the new tree.
 
 ### Second-Order Taylor Approximation
 
@@ -185,14 +185,14 @@ h_i =
 
 where:
 
-- \(g_i\) is the gradient (first derivative).
-- \(h_i\) is the Hessian (second derivative).
+- $$\(g_i\)$$ is the gradient (first derivative).
+- $$\(h_i\)$$ is the Hessian (second derivative).
 
 Using the second-order Taylor approximation, the objective for a new tree can be approximated using these gradients and Hessians.
 
 ### Leaf Weight
 
-For a leaf containing a set of observations \(I_j\), the optimal leaf value can be obtained using the sum of gradients and Hessians:
+For a leaf containing a set of observations $$\(I_j\)$$, the optimal leaf value can be obtained using the sum of gradients and Hessians:
 
 ```math
 w_j^* =
@@ -202,12 +202,12 @@ w_j^* =
 
 where:
 
-- \(w_j^*\) is the optimal value of the leaf.
-- \(g_i\) is the gradient.
-- \(h_i\) is the Hessian.
-- \(\lambda\) is the L2 regularization parameter.
-- \(\sum_{i\in I_j} g_i\) represents the total gradient in the leaf.
-- \(\sum_{i\in I_j} h_i\) represents the total Hessian in the leaf.
+- $$\(w_j^*\)$$ is the optimal value of the leaf.
+- $$\(g_i\)$$ is the gradient.
+- $$\(h_i\)$$ is the Hessian.
+- $$\(\lambda\)$$ is the L2 regularization parameter.
+- $$\(\sum_{i\in I_j} g_i\)$$ represents the total gradient in the leaf.
+- $$\(\sum_{i\in I_j} h_i\)$$ represents the total Hessian in the leaf.
 
 ### Choosing a Split
 
@@ -245,9 +245,9 @@ H_R = \sum_{i\in R} h_i
 
 Here:
 
-- \(G_L\) and \(G_R\) are the sums of gradients in the left and right child nodes.
-- \(H_L\) and \(H_R\) are the sums of Hessians in the left and right child nodes.
-- \(\lambda\) is the L2 regularization parameter.
+- $$\(G_L\)$$ and $$\(G_R\)$$ are the sums of gradients in the left and right child nodes.
+- $$\(H_L\)$$ and $$\(H_R\)$$ are the sums of Hessians in the left and right child nodes.
+- $$\(\lambda\)$$ is the L2 regularization parameter.
 
 A split that produces a larger gain provides a greater improvement in the objective and is therefore preferred.
 
