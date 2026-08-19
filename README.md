@@ -138,32 +138,41 @@ LightGBM is based on gradient boosting, where multiple decision trees are built 
 For a training dataset with observations $x_i$ and target values $y_i$, the prediction after adding a new tree can be written as:
 
 $$
-\hat{y}_i^{(t)} = \hat{y}_i^{(t-1)} + f_t(x_i)
+\hat{y}_i^{(t)}
+=
+\hat{y}_i^{(t-1)}
++
+f_t(x_i)
 $$
 
 where:
 
-- $\hat{y}_i^{(t-1)}$ is the prediction from the previous trees.
-- $f_t(x_i)$ is the new decision tree.
-- $\hat{y}_i^{(t)}$ is the updated prediction.
+- $y_i$ represents the actual value.
+- $\hat{y}_i$ represents the predicted value.
+- $\hat{y}_i^{(t-1)}$ represents the prediction from the previous boosting iteration.
+- $\hat{y}_i^{(t)}$ represents the updated prediction at the current boosting iteration.
+- $f_t(x_i)$ represents the new decision tree.
+- $t$ represents the current boosting iteration.
 
 ### Objective Function
 
 At each boosting iteration, LightGBM minimizes an objective function consisting of the training loss and a regularization term:
 
 $$
-Obj^{(t)} =
-\sum_{i=1}^{n} L(y_i,\hat{y}_i^{(t)})
+Obj^{(t)}
+=
+\sum_{i=1}^{n}
+L(y_i,\hat{y}_i^{(t)})
 +
 \Omega(f_t)
 $$
 
 where:
 
-- $L$ is the loss function.
 - $y_i$ is the actual value.
-- $\hat{y}_i^{(t)}$ is the predicted value.
-- $\Omega(f_t)$ controls the complexity of the new tree.
+- $\hat{y}_i^{(t)}$ is the predicted value at iteration $t$.
+- $L$ is the loss function.
+- $\Omega(f_t)$ is the regularization term that controls the complexity of the new tree.
 
 ### Second-Order Taylor Approximation
 
@@ -172,20 +181,22 @@ LightGBM uses the first and second derivatives of the loss function to efficient
 For each observation:
 
 $$
-g_i =
+g_i
+=
 \frac{\partial L(y_i,\hat{y}_i^{(t-1)})}
 {\partial \hat{y}_i^{(t-1)}}
 $$
 
 $$
-h_i =
+h_i
+=
 \frac{\partial^2 L(y_i,\hat{y}_i^{(t-1)})}
 {\partial (\hat{y}_i^{(t-1)})^2}
 $$
 
 where:
 
-- $g_i$ is the gradient.
+- $g_i$ is the gradient (first derivative).
 - $h_i$ is the Hessian (second derivative).
 
 Using the second-order Taylor approximation, the objective for a new tree can be approximated using these gradients and Hessians.
@@ -195,7 +206,8 @@ Using the second-order Taylor approximation, the objective for a new tree can be
 For a leaf containing a set of observations $I_j$, the optimal leaf value can be obtained using the sum of gradients and Hessians:
 
 $$
-w_j^* =
+w_j^*
+=
 -\frac{\sum_{i\in I_j} g_i}
 {\sum_{i\in I_j} h_i + \lambda}
 $$
@@ -203,6 +215,8 @@ $$
 where:
 
 - $w_j^*$ is the optimal value of the leaf.
+- $g_i$ is the gradient.
+- $h_i$ is the Hessian.
 - $\lambda$ is the L2 regularization parameter.
 - $\sum_{i\in I_j} g_i$ represents the total gradient in the leaf.
 - $\sum_{i\in I_j} h_i$ represents the total Hessian in the leaf.
@@ -214,7 +228,8 @@ LightGBM evaluates possible feature splits by calculating the improvement in the
 For a split into left and right child nodes, the split gain is based on:
 
 $$
-Gain =
+Gain
+=
 \frac{1}{2}
 \left(
 \frac{G_L^2}{H_L+\lambda}
@@ -228,18 +243,32 @@ $$
 where:
 
 $$
-G_L = \sum_{i\in L} g_i,
+G_L
+=
+\sum_{i\in L} g_i,
 \qquad
-G_R = \sum_{i\in R} g_i
+G_R
+=
+\sum_{i\in R} g_i
 $$
 
 and:
 
 $$
-H_L = \sum_{i\in L} h_i,
+H_L
+=
+\sum_{i\in L} h_i,
 \qquad
-H_R = \sum_{i\in R} h_i
+H_R
+=
+\sum_{i\in R} h_i
 $$
+
+Here:
+
+- $G_L$ and $G_R$ are the sums of gradients in the left and right child nodes.
+- $H_L$ and $H_R$ are the sums of Hessians in the left and right child nodes.
+- $\lambda$ is the L2 regularization parameter.
 
 A split that produces a larger gain provides a greater improvement in the objective and is therefore preferred.
 
