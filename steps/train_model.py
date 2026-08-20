@@ -238,6 +238,11 @@ def train_model(data: pd.DataFrame) -> str:
             mape
         )
 
+        # Log final model to MLflow
+        mlflow.lightgbm.log_model(
+            model,
+            name="forecast_model"
+        )
         print("\nFinal Model Results")
         print("-------------------")
         print(f"RMSE: {rmse:.2f}")

@@ -11,3 +11,8 @@ zenml_recovered.db
 
 # Generated predictions
 data/new_predictions.csv
+# Local virtual environment
+venv312/
+
+# MLflow tracking artifacts
+mlruns/
