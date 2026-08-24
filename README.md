@@ -539,10 +539,6 @@ The final experiment achieved an RMSE of 1.2253 and a MAPE of 46.29%.
 
 The workflow provides a structured and reproducible approach to developing, optimizing, tracking, and evaluating a demand forecasting model.
 
-## Team Members
-
-- Roshni N
-- Sanapathi Veda Charan
 =======
 # Demand Forecasting MLOps
 
@@ -871,5 +867,4 @@ The workflow provides a structured and reproducible approach to developing, opti
 
 - Roshni N
 - Sanapathi Veda Charan
->>>>>>> fd99135 (Add MLOps monitoring with Grafana and Prometheus)
 - Vinay V
