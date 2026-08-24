@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Demand Forecasting MLOps
 
 ## Problem Statement
