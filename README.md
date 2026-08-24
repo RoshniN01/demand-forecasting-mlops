@@ -866,15 +866,11 @@ The Prometheus configuration is available at
 monitoring/prometheus/prometheus.yml
 
 
-### 2. Grafana dashboard
+## Grafana Dashboard
 
+The following dashboard shows the monitoring results of the demand forecasting pipeline using Grafana and Prometheus.
 
-
-- `rmse` → **1.22**
-- `mape` → **44.5**
-- `optuna_trials` → **10**
-- `best_optuna_rmse` → **1.22**
-- `Total products` → **5**
+![Grafana Dashboard](images/Grafana%20Dashboard.jpeg)
 
 Then create this folder inside your repository:
 
